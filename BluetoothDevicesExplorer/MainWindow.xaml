@@ -1,0 +1,85 @@
+﻿<Window x:Class="BluetoothDevicesExplorer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:BluetoothDevicesExplorer.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:BluetoothDevicesExplorer"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:p="clr-namespace:BluetoothDevicesExplorer.Properties"
+        Title="Bluetooth Devices Explorer"
+        Width="{Binding Source={x:Static p:Settings.Default}, Path=MainWindowWidth, Mode=TwoWay}"
+        Height="{Binding Source={x:Static p:Settings.Default}, Path=MainWindowHeight, Mode=TwoWay}"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d">
+	<Window.CommandBindings>
+		<CommandBinding CanExecute="CommandDeviceProperties_CanExecute" Command="local:MainWindow.CommandDeviceProperties" Executed="CommandDeviceProperties_Executed" />
+		<CommandBinding CanExecute="CommandRefreshDeviceList_CanExecute" Command="local:MainWindow.CommandRefreshDeviceList" Executed="CommandRefreshDeviceList_Executed" />
+	</Window.CommandBindings>
+	<Grid Margin="5">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="2*" />
+		</Grid.RowDefinitions>
+		<!--  Device List  -->
+		<GroupBox Margin="0,0,0,4" Padding="5" Header="Devices">
+			<Grid Grid.Row="0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition />
+				</Grid.RowDefinitions>
+				<StackPanel Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,5" Orientation="Horizontal">
+					<CheckBox Name="CheckBoxAuthentificated" Margin="0,0,10,0" Content="Authentificated" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Authentificated}" />
+					<CheckBox Name="CheckBoxConnected" Margin="0,0,10,0" Content="Connected Only" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ConnectedOnly}" />
+					<CheckBox Name="CheckBoxDoscoverable" Margin="0,0,10,0" Content="Discoverable Only" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=DiscoverableOnly}" />
+					<CheckBox Name="CheckBoxRemembered" Margin="0,0,10,0" Content="Remembered" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Remembered}" />
+					<CheckBox Name="CheckBoxUnknown" Margin="0,0,10,0" Content="Unknown" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=Unknown}" />
+				</StackPanel>
+				<ListView Name="ListViewDevices" Grid.Row="1" Grid.Column="0"
+				          IsEnabled="{Binding IsDiscovering, Converter={converters:InvertedBoolConverter}}"
+				          ItemsSource="{Binding Devices}"
+				          MouseDoubleClick="ListView_MouseDoubleClick"
+				          SelectionChanged="ListView_SelectionChanged">
+					<ListView.View>
+						<GridView>
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding DeviceName}" Header="Name" />
+							<GridViewColumn Width="Auto" Header="Address">
+								<GridViewColumn.CellTemplate>
+									<DataTemplate>
+										<TextBlock FontFamily="Consolas" Text="{Binding DeviceAddress, Converter={converters:BluetoothAddressToFormattedStringConverter}}" />
+									</DataTemplate>
+								</GridViewColumn.CellTemplate>
+							</GridViewColumn>
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding Connected}" Header="Connected" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding Authenticated}" Header="Authenticated" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding Remembered}" Header="Remembered" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding LastUsed}" Header="Last Used" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding LastSeen}" Header="Last Seen" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding InstalledServices.Length}" Header="Installed Services" />
+						</GridView>
+					</ListView.View>
+				</ListView>
+				<TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center"
+				           VerticalAlignment="Center" FontSize="30" Foreground="Red" Text="Discovering..."
+				           Visibility="{Binding IsDiscovering, Converter={converters:BoolToVisibilityConverter}}" />
+				<StackPanel Grid.Row="1" Grid.Column="1" Width="70" Margin="5,0,0,0" Orientation="Vertical">
+					<Button Command="local:MainWindow.CommandRefreshDeviceList" Content="Refresh" />
+					<Button Margin="0,2,0,0" Command="local:MainWindow.CommandDeviceProperties" Content="Properties" />
+				</StackPanel>
+			</Grid>
+		</GroupBox>
+		<GridSplitter Grid.Row="1" Height="5" Margin="1" HorizontalAlignment="Stretch"
+		              Background="LightGray" />
+		<GroupBox Grid.Row="2" Margin="0,2,0,0" Padding="5" Header="Device Information">
+			<TextBox Name="TextBoxInfo" FontFamily="Consolas" FontSize="12"
+			         HorizontalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="NoWrap"
+			         VerticalScrollBarVisibility="Auto" />
+		</GroupBox>
+	</Grid>
+</Window>
