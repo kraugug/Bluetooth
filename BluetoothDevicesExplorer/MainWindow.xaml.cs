@@ -47,6 +47,13 @@ namespace BluetoothDevicesExplorer
 		}
 		public static readonly DependencyProperty IsDiscoveringProperty = DependencyProperty.Register("IsDiscovering", typeof(bool), typeof(MainWindow), new UIPropertyMetadata(false));
 
+		public bool IsGatheringInformation
+		{
+			get { return (bool)GetValue(IsGatheringInformationProperty); }
+			set { SetValue(IsGatheringInformationProperty, value); }
+		}
+		public static readonly DependencyProperty IsGatheringInformationProperty = DependencyProperty.Register("IsGatheringInformation", typeof(bool), typeof(MainWindow), new UIPropertyMetadata(false));
+
 		#endregion
 
 		#region Methods
@@ -79,7 +86,7 @@ namespace BluetoothDevicesExplorer
 				BluetoothDeviceInfo[] devices = null;
 				using (BluetoothClient btClient = new BluetoothClient())
 				{
-					devices = btClient.DiscoverDevices(5, Properties.Settings.Default.Authentificated, Properties.Settings.Default.Remembered,
+					devices = btClient.DiscoverDevices(100, Properties.Settings.Default.Authentificated, Properties.Settings.Default.Remembered,
 						Properties.Settings.Default.Unknown, Properties.Settings.Default.DiscoverableOnly);
 				}
 				Dispatcher.Invoke(new Action(() =>
@@ -103,28 +110,35 @@ namespace BluetoothDevicesExplorer
 			BluetoothDeviceInfo device = (sender as ListView).SelectedItem as BluetoothDeviceInfo;
 			if (device != null)
 			{
-				TextBoxInfo.Clear();
-				if (device.Authenticated && device.Remembered)
+				if (device.InstalledServices.Length > 0)
 				{
-					try
+					Task.Factory.StartNew(() =>
 					{
-						foreach (var guid in device.InstalledServices)
+						Dispatcher.Invoke(new Action(() =>
 						{
-							ServiceRecord[] serviceRecords = device.GetServiceRecords(guid);
-							TextBoxInfo.Text += string.Format("=========== Service: {0} ({1}) ==========={2}{2}", BluetoothService.GetName(guid), guid, Environment.NewLine);
-							foreach (var serviceRecord in serviceRecords)
+							IsGatheringInformation = true;
+							TextBoxInfo.Clear();
+						}));
+						try
+						{
+							foreach (var guid in device.InstalledServices)
 							{
-								TextBoxInfo.Text += ServiceRecordUtilities.Dump(serviceRecord) + Environment.NewLine;
+								ServiceRecord[] serviceRecords = device.GetServiceRecords(guid);
+								Dispatcher.Invoke(new Action(() =>
+								{
+									TextBoxInfo.Text += string.Format("=========== Service: {0} ({1}) ==========={2}{2}", BluetoothService.GetName(guid), guid, Environment.NewLine);
+									foreach (var serviceRecord in serviceRecords)
+									{
+										TextBoxInfo.Text += ServiceRecordUtilities.Dump(serviceRecord) + Environment.NewLine;
+									}
+								}));
 							}
 						}
-					}
-					catch
-					{
-						TextBoxInfo.Text = "Connect device to see more information";
-					}
+						catch { Dispatcher.Invoke(new Action(() => { TextBoxInfo.Text = string.Format("No available information for '{0}'. Try to connect/turn-on the device.", device.DeviceName); })); }
+					}).ContinueWith((Task task) => { Dispatcher.Invoke(new Action(() => { IsGatheringInformation = false; })); });
 				}
 				else
-					TextBoxInfo.Text = "Connect device to see more information";
+					TextBoxInfo.Text = "No installed services.";
 			}
 		}
 
