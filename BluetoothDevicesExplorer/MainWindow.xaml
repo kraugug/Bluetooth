@@ -63,6 +63,7 @@
 							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding LastUsed}" Header="Last Used" />
 							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding LastSeen}" Header="Last Seen" />
 							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding InstalledServices.Length}" Header="Installed Services" />
+							<GridViewColumn Width="Auto" DisplayMemberBinding="{Binding InstalledServices, Converter={converters:GuidArrayToStringConverter}}" Header="Services" />
 						</GridView>
 					</ListView.View>
 				</ListView>

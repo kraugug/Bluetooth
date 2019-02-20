@@ -61,6 +61,7 @@
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
     <Compile Include="Converters\BluetoothAddressToFormattedStringConverter.cs" />
+    <Compile Include="Converters\GuidArrayToStringConverter.cs" />
     <Compile Include="Converters\InvertedBoolConverter.cs" />
     <Compile Include="Converters\StringToGridLengthConverter.cs" />
     <Compile Include="Converters\Generic\MarkupValueConverter.cs" />

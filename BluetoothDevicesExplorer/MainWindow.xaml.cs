@@ -124,6 +124,7 @@ namespace BluetoothDevicesExplorer
 							foreach (var guid in device.InstalledServices)
 							{
 								ServiceRecord[] serviceRecords = device.GetServiceRecords(guid);
+
 								Dispatcher.Invoke(new Action(() =>
 								{
 									TextBoxInfo.Text += string.Format("=========== Service: {0} ({1}) ==========={2}{2}", BluetoothService.GetName(guid), guid, Environment.NewLine);
