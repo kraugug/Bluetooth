@@ -104,16 +104,23 @@ namespace BluetoothDevicesExplorer
 			if (device != null)
 			{
 				TextBoxInfo.Clear();
-				if (device.Connected)
+				if (device.Authenticated && device.Remembered)
 				{
-					foreach (var guid in device.InstalledServices)
+					try
 					{
-						ServiceRecord[] serviceRecords = device.GetServiceRecords(guid);
-						TextBoxInfo.Text += string.Format("=========== Service: {0} ({1}) ==========={2}{2}", BluetoothService.GetName(guid), guid, Environment.NewLine);
-						foreach (var serviceRecord in serviceRecords)
+						foreach (var guid in device.InstalledServices)
 						{
-							TextBoxInfo.Text += ServiceRecordUtilities.Dump(serviceRecord) + Environment.NewLine;
+							ServiceRecord[] serviceRecords = device.GetServiceRecords(guid);
+							TextBoxInfo.Text += string.Format("=========== Service: {0} ({1}) ==========={2}{2}", BluetoothService.GetName(guid), guid, Environment.NewLine);
+							foreach (var serviceRecord in serviceRecords)
+							{
+								TextBoxInfo.Text += ServiceRecordUtilities.Dump(serviceRecord) + Environment.NewLine;
+							}
 						}
+					}
+					catch
+					{
+						TextBoxInfo.Text = "Connect device to see more information";
 					}
 				}
 				else
